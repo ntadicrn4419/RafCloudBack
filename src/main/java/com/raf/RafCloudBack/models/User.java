@@ -27,7 +27,16 @@ public class User {
 
     @Column
     @ElementCollection
-    private List<UserPermission> userPermissionList;
+    private List<UserPermission> permissions;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getFirstname() {
         return firstname;
     }
@@ -61,11 +70,11 @@ public class User {
     }
 
     public List<UserPermission> getPermissionList() {
-        return userPermissionList;
+        return permissions;
     }
 
     public void setPermissionList(List<UserPermission> userPermissionList) {
-        this.userPermissionList = userPermissionList;
+        this.permissions = userPermissionList;
     }
 
     @Override
@@ -76,7 +85,7 @@ public class User {
                 ", lastname='" + lastname + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", permissionList=" + userPermissionList +
+                ", permissionList=" + permissions +
                 '}';
     }
 }
