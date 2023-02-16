@@ -46,4 +46,8 @@ public class MachineService {
         machineToDelete.setStatus(machine.getStatus());
         this.machineRepository.save(machineToDelete);
     }
+
+    public List<Machine> getUserMachines(Long id) {
+        return this.machineRepository.findAll().stream().filter(machine -> machine.getCreatedBy().equals(id)).toList();
+    }
 }

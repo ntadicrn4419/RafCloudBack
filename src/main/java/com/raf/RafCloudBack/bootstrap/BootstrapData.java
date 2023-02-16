@@ -45,6 +45,7 @@ public class BootstrapData implements CommandLineRunner {
         user1UserPermissionList.add(UserPermission.CAN_START_MACHINES);
         user1UserPermissionList.add(UserPermission.CAN_STOP_MACHINES);
         user1UserPermissionList.add(UserPermission.CAN_RESTART_MACHINES);
+        //user1UserPermissionList.add(UserPermission.CAN_SEE_ALL_MACHINES);
 
         user1.setId(Long.valueOf(1));
         user1.setFirstname("User1");

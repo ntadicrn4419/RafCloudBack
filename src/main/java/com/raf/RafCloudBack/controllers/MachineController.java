@@ -1,23 +1,16 @@
 package com.raf.RafCloudBack.controllers;
-
-import com.raf.RafCloudBack.dto.MachineIdDto;
-import com.raf.RafCloudBack.dto.UserEmailDto;
 import com.raf.RafCloudBack.models.Machine;
-import com.raf.RafCloudBack.models.MachineStatus;
-import com.raf.RafCloudBack.models.User;
 import com.raf.RafCloudBack.models.UserPermission;
 import com.raf.RafCloudBack.responses.AllMachineResponses;
-import com.raf.RafCloudBack.responses.AllUsersResponse;
 import com.raf.RafCloudBack.services.AuthorisationService;
 import com.raf.RafCloudBack.services.MachineService;
+import com.raf.RafCloudBack.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
 import java.util.List;
-
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 @RestController
@@ -25,19 +18,32 @@ import static org.springframework.security.core.context.SecurityContextHolder.ge
 @RequestMapping("/api/machines")
 public class MachineController {
     private final MachineService machineService;
+    private final UserService userService;
     private final AuthorisationService authorisationService;
 
     @Autowired
-    public MachineController(MachineService machineService, AuthorisationService authorisationService) {
+    public MachineController(MachineService machineService, UserService userService, AuthorisationService authorisationService) {
         this.machineService = machineService;
+        this.userService = userService;
         this.authorisationService = authorisationService;
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllMachines() {
+    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllMachinesInCloud() {
+        String email = getContext().getAuthentication().getName();
+        if (this.authorisationService.isAuthorised(UserPermission.CAN_SEE_ALL_MACHINES, email)) {
+            List<Machine> machines = this.machineService.getAll();
+            return ResponseEntity.ok(new AllMachineResponses((machines)));
+        }
+        return ResponseEntity.status(403).build();
+    }
+
+    @GetMapping()
+    public ResponseEntity<?> getUserMachines() {
         String email = getContext().getAuthentication().getName();
         if (this.authorisationService.isAuthorised(UserPermission.CAN_SEARCH_MACHINES, email)) {
-            List<Machine> machines = this.machineService.getAll();
+            Long signedInUserId = this.userService.findByEmail(email).getId();
+            List<Machine> machines = this.machineService.getUserMachines(signedInUserId);
             return ResponseEntity.ok(new AllMachineResponses((machines)));
         }
         return ResponseEntity.status(403).build();
@@ -63,7 +69,7 @@ public class MachineController {
         return ResponseEntity.status(403).build();
     }
 
-    @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/start-stop", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateStatus(@Valid @RequestBody Machine machine) {
         String email = getContext().getAuthentication().getName();
         switch (machine.getStatus()) {
@@ -82,6 +88,12 @@ public class MachineController {
             default:
                 return ResponseEntity.status(403).build();
         }
+        return ResponseEntity.status(403).build();
+    }
+
+    @PutMapping(value = "/restart", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> restart(@Valid @RequestBody Machine machine) {
+        //TODO: implement
         return ResponseEntity.status(403).build();
     }
 
