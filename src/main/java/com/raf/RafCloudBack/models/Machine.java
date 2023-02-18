@@ -1,7 +1,8 @@
 package com.raf.RafCloudBack.models;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table
@@ -12,12 +13,21 @@ public class Machine {
     @Column
     @NotNull
     private MachineStatus status;
-    @Column
+
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User user;
     @NotNull
-    private Long createdBy; //user foreign key id
     @Column
     @NotNull
     private boolean active;
+
+    @Column(unique = true)
+    @NotNull
+    private String name;
+
+    @OneToMany(mappedBy = "machine", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MachineRunningPeriod> runningPeriods = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -35,12 +45,12 @@ public class Machine {
         this.status = status;
     }
 
-    public Long getCreatedBy() {
-        return createdBy;
+    public User getUser() {
+        return user;
     }
 
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public boolean isActive() {
@@ -51,13 +61,19 @@ public class Machine {
         this.active = active;
     }
 
-    @Override
-    public String toString() {
-        return "Machine{" +
-                "id=" + id +
-                ", status=" + status +
-                ", createdBy=" + createdBy +
-                ", active=" + active +
-                '}';
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<MachineRunningPeriod> getRunningPeriods() {
+        return runningPeriods;
+    }
+
+    public void setRunningPeriods(List<MachineRunningPeriod> runningPeriods) {
+        this.runningPeriods = runningPeriods;
     }
 }

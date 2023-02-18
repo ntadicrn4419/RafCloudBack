@@ -1,9 +1,6 @@
 package com.raf.RafCloudBack.bootstrap;
 
-import com.raf.RafCloudBack.models.Machine;
-import com.raf.RafCloudBack.models.MachineStatus;
-import com.raf.RafCloudBack.models.UserPermission;
-import com.raf.RafCloudBack.models.User;
+import com.raf.RafCloudBack.models.*;
 import com.raf.RafCloudBack.repositories.MachineRepository;
 import com.raf.RafCloudBack.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +8,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Date;
+import java.util.*;
 
 @Component
 public class BootstrapData implements CommandLineRunner {
@@ -88,21 +85,42 @@ public class BootstrapData implements CommandLineRunner {
         Machine m1 = new Machine();
         m1.setActive(true);
         m1.setStatus(MachineStatus.RUNNING);
-        m1.setCreatedBy(Long.valueOf(1));
+        m1.setUser(user1);
+        m1.setName("Machine1");
+
+        MachineRunningPeriod mrp1 = new MachineRunningPeriod();
+        mrp1.setMachine(m1);
+        mrp1.setDateStarted(new Date(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24 * 4)));//4 days ago
+        mrp1.setDateStopped(new Date(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24 * 3)));//3 days ago
+
+        MachineRunningPeriod mrp11 = new MachineRunningPeriod();
+        mrp11.setMachine(m1);
+        mrp11.setDateStarted(new Date(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24 * 2)));//2 days ago
+        mrp11.setDateStopped(new Date(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24)));//1 days ago
+
+        List<MachineRunningPeriod> runningPeriods1 = new ArrayList<>();
+        runningPeriods1.add(mrp1);
+        runningPeriods1.add(mrp11);
+
+        m1.setRunningPeriods(runningPeriods1);
         this.machineRepository.save(m1);
+
 
         Machine m2 = new Machine();
         m2.setActive(true);
         m2.setStatus(MachineStatus.STOPPED);
-        m2.setCreatedBy(Long.valueOf(1));
+        m2.setUser(user1);
+        m2.setName("Machine2");
         this.machineRepository.save(m2);
 
         Machine m3 = new Machine();
         m3.setActive(true);
         m3.setStatus(MachineStatus.STOPPED);
-        m3.setCreatedBy(Long.valueOf(2));
+        m3.setUser(user2);
+        m3.setName("Machine3");
         this.machineRepository.save(m3);
 
         System.out.println("Data loaded!");
     }
+
 }

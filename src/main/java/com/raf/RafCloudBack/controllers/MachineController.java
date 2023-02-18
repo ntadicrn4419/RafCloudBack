@@ -1,5 +1,9 @@
 package com.raf.RafCloudBack.controllers;
+import com.raf.RafCloudBack.dto.MachineIdDto;
+import com.raf.RafCloudBack.dto.MachineNameDto;
 import com.raf.RafCloudBack.models.Machine;
+import com.raf.RafCloudBack.models.MachineStatus;
+import com.raf.RafCloudBack.models.User;
 import com.raf.RafCloudBack.models.UserPermission;
 import com.raf.RafCloudBack.responses.AllMachineResponses;
 import com.raf.RafCloudBack.services.AuthorisationService;
@@ -10,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
@@ -60,9 +65,16 @@ public class MachineController {
     }
 
     @PostMapping(value = "/add", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Machine> create(@Valid @RequestBody Machine machine) {
+    public ResponseEntity<Machine> create(@Valid @RequestBody MachineNameDto dto) {
         String email = getContext().getAuthentication().getName();
         if (this.authorisationService.isAuthorised(UserPermission.CAN_CREATE_MACHINES, email)) {
+            User user = this.userService.findByEmail(email);
+            Machine machine = new Machine();
+            machine.setName(dto.getName());
+            machine.setUser(user);
+            machine.setActive(true);
+            machine.setStatus(MachineStatus.STOPPED);
+            machine.setRunningPeriods(new ArrayList<>());
             this.machineService.create(machine);
             return ResponseEntity.ok(machine);
         }

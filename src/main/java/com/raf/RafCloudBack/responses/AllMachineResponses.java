@@ -3,17 +3,17 @@ package com.raf.RafCloudBack.responses;
 import com.raf.RafCloudBack.models.Machine;
 import java.util.List;
 public class AllMachineResponses {
-    private List<Machine> allMachines;
+    private List<Machine> machines;
 
-    public AllMachineResponses(List<Machine> allMachines) {
-        this.allMachines = allMachines;
+    public AllMachineResponses(List<Machine> machines) {
+        this.machines = machines;
     }
 
-    public List<Machine> getAllMachines() {
-        return allMachines;
+    public List<Machine> getMachines() {
+        return machines;
     }
 
-    public void setAllMachines(List<Machine> allMachines) {
-        this.allMachines = allMachines;
+    public void setMachines(List<Machine> machines) {
+        this.machines = machines;
     }
 }

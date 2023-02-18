@@ -1,6 +1,5 @@
 package com.raf.RafCloudBack.services;
 import com.raf.RafCloudBack.models.Machine;
-import com.raf.RafCloudBack.models.User;
 import com.raf.RafCloudBack.repositories.MachineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,7 @@ public class MachineService {
     public void updateStatus(Machine machine) {
         Machine oldMachine = this.machineRepository.getById(machine.getId());
         oldMachine.setId(machine.getId());
-        oldMachine.setCreatedBy(machine.getCreatedBy());
+        oldMachine.setUser(machine.getUser());
         oldMachine.setActive(machine.isActive());
         oldMachine.setStatus(machine.getStatus());
         this.machineRepository.save(oldMachine);
@@ -41,13 +40,13 @@ public class MachineService {
     public void delete(Machine machine) {
         Machine machineToDelete = this.machineRepository.getById(machine.getId());
         machineToDelete.setId(machine.getId());
-        machineToDelete.setCreatedBy(machine.getCreatedBy());
+        machineToDelete.setUser(machine.getUser());
         machineToDelete.setActive(false);
         machineToDelete.setStatus(machine.getStatus());
         this.machineRepository.save(machineToDelete);
     }
 
     public List<Machine> getUserMachines(Long id) {
-        return this.machineRepository.findAll().stream().filter(machine -> machine.getCreatedBy().equals(id)).toList();
+        return this.machineRepository.findAll().stream().filter(machine -> machine.getUser().getId().equals(id)).toList();
     }
 }

@@ -4,7 +4,6 @@ public class MachineIdDto {
     private long id;
 
     public MachineIdDto() {
-
     }
 
     public long getId() {
