@@ -102,6 +102,7 @@ public class BootstrapData implements CommandLineRunner {
         runningPeriods1.add(mrp11);
 
         m1.setRunningPeriods(runningPeriods1);
+        m1.setOperationInProgress(false);
         this.machineRepository.save(m1);
 
 
@@ -112,6 +113,7 @@ public class BootstrapData implements CommandLineRunner {
         m2.setName("Machine2");
         m2.setCreatedAt(new Timestamp(Calendar.getInstance().getTimeInMillis() - (1000 * 3600 * 24 * 9 + 1000*3600*3 + 1000*60*27))); //9 days, 3 hours  and 27 minutes ago
         m2.setRunningPeriods(new ArrayList<>());
+        m2.setOperationInProgress(false);
         this.machineRepository.save(m2);
 
         Machine m3 = new Machine();
@@ -121,6 +123,7 @@ public class BootstrapData implements CommandLineRunner {
         m3.setName("Machine3");
         m3.setRunningPeriods(new ArrayList<>());
         m3.setCreatedAt(new Timestamp(Calendar.getInstance().getTimeInMillis() - (1000 * 3600 * 24 * 7 + 1000*3600*6 + 1000*60*33))); //7 days, 6 hours  and 33 minutes ago
+        m3.setOperationInProgress(false);
         this.machineRepository.save(m3);
 
         System.out.println("Data loaded!");

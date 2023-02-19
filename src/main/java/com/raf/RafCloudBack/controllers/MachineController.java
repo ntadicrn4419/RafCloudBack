@@ -1,7 +1,9 @@
 package com.raf.RafCloudBack.controllers;
 
 import com.raf.RafCloudBack.dto.MachineFiltersDto;
+import com.raf.RafCloudBack.dto.MachineIdDto;
 import com.raf.RafCloudBack.dto.MachineNameDto;
+import com.raf.RafCloudBack.dto.MachineScheduleDto;
 import com.raf.RafCloudBack.models.Machine;
 import com.raf.RafCloudBack.models.MachineStatus;
 import com.raf.RafCloudBack.models.User;
@@ -27,6 +29,7 @@ import static org.springframework.security.core.context.SecurityContextHolder.ge
 @CrossOrigin
 @RequestMapping("/api/machines")
 public class MachineController {
+    //TODO: check status codes
     private final MachineService machineService;
     private final UserService userService;
     private final AuthorisationService authorisationService;
@@ -39,7 +42,7 @@ public class MachineController {
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllMachinesInCloud() {
+    public ResponseEntity<?> getAllMachinesInCloud() { //only for internal testing, user can not access it
         String email = getContext().getAuthentication().getName();
         if (this.authorisationService.isAuthorised(UserPermission.CAN_SEE_ALL_MACHINES, email)) {
             List<Machine> machines = this.machineService.getAll();
@@ -92,47 +95,98 @@ public class MachineController {
             machine.setStatus(MachineStatus.STOPPED);
             machine.setRunningPeriods(new ArrayList<>());
             machine.setCreatedAt(new Timestamp(Calendar.getInstance().getTimeInMillis()));
+            machine.setOperationInProgress(false);
             this.machineService.create(machine);
             return ResponseEntity.ok(machine);
         }
         return ResponseEntity.status(403).build();
     }
 
-    @PutMapping(value = "/start-stop", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateStatus(@Valid @RequestBody Machine machine) {
+    @PutMapping(value = "/start/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> startMachine(@PathVariable("id") Long machineId) {
         String email = getContext().getAuthentication().getName();
-        switch (machine.getStatus()) {
-            case RUNNING -> {
-                if (this.authorisationService.isAuthorised(UserPermission.CAN_START_MACHINES, email)) {
-                    this.machineService.updateStatus(machine);
-                    return ResponseEntity.ok(machine);
-                }
+        if (this.authorisationService.isAuthorised(UserPermission.CAN_START_MACHINES, email)) {
+            if(this.machineService.isOperationInProgress(machineId)) {
+                return ResponseEntity.status(403).body("Can't START. Another operation is in progress for machine with id " + machineId);
             }
-            case STOPPED -> {
-                if (this.authorisationService.isAuthorised(UserPermission.CAN_STOP_MACHINES, email)) {
-                    this.machineService.updateStatus(machine);
-                    return ResponseEntity.ok(machine);
-                }
+            if(this.machineService.getMachineStatus(machineId).equals(MachineStatus.RUNNING)) {
+                return ResponseEntity.status(403).body("Can't START. Machine with id " + machineId + " is already in status RUNNING.");
             }
-            default -> {
-                return ResponseEntity.status(403).build();
-            }
+            this.machineService.updateStatus(machineId);
+            return ResponseEntity.status(200).build();
         }
         return ResponseEntity.status(403).build();
     }
 
-    @PutMapping(value = "/restart", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> restart(@Valid @RequestBody Machine machine) {
-        //TODO: implement
+    @PutMapping(value = "/stop/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> stopMachine(@PathVariable("id") Long machineId) {
+        String email = getContext().getAuthentication().getName();
+        if (this.authorisationService.isAuthorised(UserPermission.CAN_STOP_MACHINES, email)) {
+            if(this.machineService.isOperationInProgress(machineId)) {
+                return ResponseEntity.status(403).body("Can't STOP. Another operation is in progress for machine with id " + machineId);
+            }
+            if(this.machineService.getMachineStatus(machineId).equals(MachineStatus.STOPPED)) {
+                return ResponseEntity.status(403).body("Can't STOP. Machine with id " + machineId + " is already in status STOPPED.");
+            }
+            this.machineService.updateStatus(machineId);
+            return ResponseEntity.status(200).build();
+        }
         return ResponseEntity.status(403).build();
     }
 
-    @PostMapping(value = "/delete", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> delete(@Valid @RequestBody Machine machine) {
+    @PutMapping(value = "/restart/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> restart(@PathVariable("id") Long machineId) {
         String email = getContext().getAuthentication().getName();
-        if (this.authorisationService.isAuthorised(UserPermission.CAN_DESTROY_MACHINES, email) && machine.getStatus() == MachineStatus.STOPPED) {
-            this.machineService.delete(machine);
+        if (this.authorisationService.isAuthorised(UserPermission.CAN_RESTART_MACHINES, email)) {
+            if(this.machineService.isOperationInProgress(machineId)) {
+                return ResponseEntity.status(403).body("Another operation is in progress for machine with id " + machineId);
+            }
+            if(this.machineService.getMachineStatus(machineId).equals(MachineStatus.STOPPED)) {
+                return ResponseEntity.status(403).body("Can't restart machine with id " + machineId + " becaues it is in status STOPPED.");
+            }
+            this.machineService.restart(machineId);
             return ResponseEntity.status(200).build();
+        }
+        return ResponseEntity.status(403).build();
+    }
+
+    @PostMapping(value = "/schedule-start", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> scheduleStartMachine(@Valid @RequestBody MachineScheduleDto dto) {
+        String email = getContext().getAuthentication().getName();
+        if (this.authorisationService.isAuthorised(UserPermission.CAN_START_MACHINES, email)) {
+            this.machineService.scheduleStart(dto.getId(), dto.getDatetime());
+            return ResponseEntity.status(200).build();
+        }
+        return ResponseEntity.status(403).build();
+    }
+
+    @PostMapping(value = "/schedule-stop", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> scheduleStopMachine(@Valid @RequestBody MachineScheduleDto dto) {
+        String email = getContext().getAuthentication().getName();
+        if (this.authorisationService.isAuthorised(UserPermission.CAN_STOP_MACHINES, email)) {
+            this.machineService.scheduleStop(dto.getId(), dto.getDatetime());
+            return ResponseEntity.status(200).build();
+        }
+        return ResponseEntity.status(403).build();
+    }
+    @PostMapping(value = "/schedule-restart", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> scheduleRestartMachine(@Valid @RequestBody MachineScheduleDto dto) {
+        String email = getContext().getAuthentication().getName();
+        if (this.authorisationService.isAuthorised(UserPermission.CAN_RESTART_MACHINES, email)) {
+            this.machineService.scheduleRestart(dto.getId(), dto.getDatetime());
+            return ResponseEntity.status(200).build();
+        }
+        return ResponseEntity.status(403).build();
+    }
+
+    @PostMapping(value = "/delete/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") Long machineId) {
+        String email = getContext().getAuthentication().getName();
+        if (this.authorisationService.isAuthorised(UserPermission.CAN_DESTROY_MACHINES, email)) {
+            if(this.machineService.delete(machineId)) {
+                return ResponseEntity.status(200).build();
+            }
+            return ResponseEntity.status(500).build();
         }
         return ResponseEntity.status(403).build();
     }

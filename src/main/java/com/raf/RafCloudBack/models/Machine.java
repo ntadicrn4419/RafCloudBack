@@ -34,6 +34,17 @@ public class Machine {
     @NotNull
     private Timestamp createdAt;
 
+    @Column
+    @Version
+    private Integer version;
+
+//    @Column(nullable = false, columnDefinition = "boolean default false")
+//    private boolean operationInProgress;
+
+    @Column
+    @NotNull
+    private boolean operationInProgress;
+
     public Long getId() {
         return id;
     }
@@ -88,5 +99,21 @@ public class Machine {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public boolean isOperationInProgress() {
+        return operationInProgress;
+    }
+
+    public void setOperationInProgress(boolean operationInProgress) {
+        this.operationInProgress = operationInProgress;
     }
 }

@@ -1,4 +1,6 @@
 package com.raf.RafCloudBack.models;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -23,11 +25,16 @@ public class User {
 
     @Column
     @NotNull
+    @JsonIgnore
     private String password;
 
     @Column
     @ElementCollection
     private List<UserPermission> permissions;
+
+    @Column
+    @Version
+    private Integer version = 0;
 
     public Long getId() {
         return id;
@@ -77,15 +84,11 @@ public class User {
         this.permissions = userPermissionList;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "userId=" + id +
-                ", firstname='" + firstname + '\'' +
-                ", lastname='" + lastname + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", permissionList=" + permissions +
-                '}';
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 }
