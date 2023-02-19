@@ -15,6 +15,7 @@ public class ErrorHandlerController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({MethodArgumentNotValidException.class, EntityNotFoundException.class, InternalError.class})
     public Map<String, String> handleError(MethodArgumentNotValidException exception) {
+        System.out.println(exception);
         Map<String, String> errors = new HashMap<>();
         for(ObjectError error: exception.getBindingResult().getAllErrors()) {
             String fieldName = ((FieldError) error).getField();

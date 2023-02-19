@@ -1,5 +1,6 @@
 package com.raf.RafCloudBack.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -25,7 +26,7 @@ public class User {
 
     @Column
     @NotNull
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Column
@@ -34,6 +35,7 @@ public class User {
 
     @Column
     @Version
+    @JsonIgnore
     private Integer version = 0;
 
     public Long getId() {

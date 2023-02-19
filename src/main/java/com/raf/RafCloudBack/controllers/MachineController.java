@@ -1,7 +1,6 @@
 package com.raf.RafCloudBack.controllers;
 
 import com.raf.RafCloudBack.dto.MachineFiltersDto;
-import com.raf.RafCloudBack.dto.MachineIdDto;
 import com.raf.RafCloudBack.dto.MachineNameDto;
 import com.raf.RafCloudBack.dto.MachineScheduleDto;
 import com.raf.RafCloudBack.models.Machine;
@@ -113,7 +112,7 @@ public class MachineController {
                 return ResponseEntity.status(403).body("Can't START. Machine with id " + machineId + " is already in status RUNNING.");
             }
             this.machineService.updateStatus(machineId);
-            return ResponseEntity.status(200).build();
+            return ResponseEntity.status(200).body("Successful. Machine is starting. Please wait.");
         }
         return ResponseEntity.status(403).build();
     }
@@ -129,7 +128,7 @@ public class MachineController {
                 return ResponseEntity.status(403).body("Can't STOP. Machine with id " + machineId + " is already in status STOPPED.");
             }
             this.machineService.updateStatus(machineId);
-            return ResponseEntity.status(200).build();
+            return ResponseEntity.status(200).body("Successful. Machine is stopping. Please wait.");
         }
         return ResponseEntity.status(403).build();
     }
@@ -142,10 +141,10 @@ public class MachineController {
                 return ResponseEntity.status(403).body("Another operation is in progress for machine with id " + machineId);
             }
             if(this.machineService.getMachineStatus(machineId).equals(MachineStatus.STOPPED)) {
-                return ResponseEntity.status(403).body("Can't restart machine with id " + machineId + " becaues it is in status STOPPED.");
+                return ResponseEntity.status(403).body("Can't restart machine with id " + machineId + " because it is in status STOPPED.");
             }
             this.machineService.restart(machineId);
-            return ResponseEntity.status(200).build();
+            return ResponseEntity.status(200).body("Successful. Machine is restarting. Please wait.");
         }
         return ResponseEntity.status(403).build();
     }
