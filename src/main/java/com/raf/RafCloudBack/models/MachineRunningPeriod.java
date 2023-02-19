@@ -4,16 +4,24 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.sql.Date;
+import java.sql.Timestamp;
+
 @Entity
 public class MachineRunningPeriod {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
-    private Date dateStarted;
 
     @Column
-    private Date dateStopped;
+    private Timestamp dateStarted;
+    @Column
+    private Timestamp dateStopped;
+
+//    @Column
+//    private Date dateStarted;
+//
+//    @Column
+//    private Date dateStopped;
 
     @JsonIgnore
     @ManyToOne
@@ -25,28 +33,28 @@ public class MachineRunningPeriod {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Date getDateStarted() {
+    public Timestamp getDateStarted() {
         return dateStarted;
     }
 
-    public void setDateStarted(Date dateWhenStarted) {
-        this.dateStarted = dateWhenStarted;
-    }
-
-    public Date getDateStopped() {
+    public Timestamp getDateStopped() {
         return dateStopped;
-    }
-
-    public void setDateStopped(Date dateWhenStopped) {
-        this.dateStopped = dateWhenStopped;
     }
 
     public Machine getMachine() {
         return machine;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setDateStarted(Timestamp dateStarted) {
+        this.dateStarted = dateStarted;
+    }
+
+    public void setDateStopped(Timestamp dateStopped) {
+        this.dateStopped = dateStopped;
     }
 
     public void setMachine(Machine machine) {

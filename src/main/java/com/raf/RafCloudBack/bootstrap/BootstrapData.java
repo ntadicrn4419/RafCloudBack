@@ -1,5 +1,4 @@
 package com.raf.RafCloudBack.bootstrap;
-
 import com.raf.RafCloudBack.models.*;
 import com.raf.RafCloudBack.repositories.MachineRepository;
 import com.raf.RafCloudBack.repositories.UserRepository;
@@ -7,8 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.*;
 
 @Component
@@ -87,16 +85,17 @@ public class BootstrapData implements CommandLineRunner {
         m1.setStatus(MachineStatus.RUNNING);
         m1.setUser(user1);
         m1.setName("Machine1");
+        m1.setCreatedAt(new Timestamp(Calendar.getInstance().getTimeInMillis() - (1000 * 3600 * 24 * 10 + 1000*3600*3))); //10 days and 3 hours ago
 
         MachineRunningPeriod mrp1 = new MachineRunningPeriod();
         mrp1.setMachine(m1);
-        mrp1.setDateStarted(new Date(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24 * 4)));//4 days ago
-        mrp1.setDateStopped(new Date(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24 * 3)));//3 days ago
+        mrp1.setDateStarted(new Timestamp(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24 * 4 + 1000*3600*2)));//4 days and 2 hours ago
+        mrp1.setDateStopped(new Timestamp(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24 * 3 + 1000*3600)));//3 days and 1 hour ago
 
         MachineRunningPeriod mrp11 = new MachineRunningPeriod();
         mrp11.setMachine(m1);
-        mrp11.setDateStarted(new Date(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24 * 2)));//2 days ago
-        mrp11.setDateStopped(new Date(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24)));//1 days ago
+        mrp11.setDateStarted(new Timestamp(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24 * 2 + 1000*3600*10)));//2 days and 10 hours ago
+        mrp11.setDateStopped(new Timestamp(Calendar.getInstance().getTimeInMillis()-(1000 * 3600 * 24 + 1000*3600*5)));//1 day and 5 hours ago
 
         List<MachineRunningPeriod> runningPeriods1 = new ArrayList<>();
         runningPeriods1.add(mrp1);
@@ -111,13 +110,17 @@ public class BootstrapData implements CommandLineRunner {
         m2.setStatus(MachineStatus.STOPPED);
         m2.setUser(user1);
         m2.setName("Machine2");
+        m2.setCreatedAt(new Timestamp(Calendar.getInstance().getTimeInMillis() - (1000 * 3600 * 24 * 9 + 1000*3600*3 + 1000*60*27))); //9 days, 3 hours  and 27 minutes ago
+        m2.setRunningPeriods(new ArrayList<>());
         this.machineRepository.save(m2);
 
         Machine m3 = new Machine();
         m3.setActive(true);
         m3.setStatus(MachineStatus.STOPPED);
-        m3.setUser(user2);
+        m3.setUser(user1);
         m3.setName("Machine3");
+        m3.setRunningPeriods(new ArrayList<>());
+        m3.setCreatedAt(new Timestamp(Calendar.getInstance().getTimeInMillis() - (1000 * 3600 * 24 * 7 + 1000*3600*6 + 1000*60*33))); //7 days, 6 hours  and 33 minutes ago
         this.machineRepository.save(m3);
 
         System.out.println("Data loaded!");

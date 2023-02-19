@@ -1,5 +1,6 @@
 package com.raf.RafCloudBack.controllers;
-import com.raf.RafCloudBack.dto.MachineIdDto;
+
+import com.raf.RafCloudBack.dto.MachineFiltersDto;
 import com.raf.RafCloudBack.dto.MachineNameDto;
 import com.raf.RafCloudBack.models.Machine;
 import com.raf.RafCloudBack.models.MachineStatus;
@@ -13,9 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import javax.validation.Valid;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 @RestController
@@ -54,6 +59,17 @@ public class MachineController {
         return ResponseEntity.status(403).build();
     }
 
+    @PostMapping(value = "/search-by-filters", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> findFilteredUserMachines(@Valid @RequestBody MachineFiltersDto dto) {
+        String email = getContext().getAuthentication().getName();
+        if (this.authorisationService.isAuthorised(UserPermission.CAN_SEARCH_MACHINES, email)) {
+            User user = this.userService.findByEmail(email);
+            List<Machine> machines = this.machineService.getFilteredUserMachines(user, dto.getName(), dto.getStatus(), dto.getRunningStarted(), dto.getRunningStopped(), dto.getCreatedAtLowerBound(), dto.getCreatedAtUpperBound());
+            return ResponseEntity.ok(new AllMachineResponses((machines)));
+        }
+        return ResponseEntity.status(403).build();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getMachineById(@PathVariable("id") Long machineId) {
         String email = getContext().getAuthentication().getName();
@@ -75,6 +91,7 @@ public class MachineController {
             machine.setActive(true);
             machine.setStatus(MachineStatus.STOPPED);
             machine.setRunningPeriods(new ArrayList<>());
+            machine.setCreatedAt(new Timestamp(Calendar.getInstance().getTimeInMillis()));
             this.machineService.create(machine);
             return ResponseEntity.ok(machine);
         }
@@ -85,20 +102,21 @@ public class MachineController {
     public ResponseEntity<?> updateStatus(@Valid @RequestBody Machine machine) {
         String email = getContext().getAuthentication().getName();
         switch (machine.getStatus()) {
-            case RUNNING:
+            case RUNNING -> {
                 if (this.authorisationService.isAuthorised(UserPermission.CAN_START_MACHINES, email)) {
                     this.machineService.updateStatus(machine);
                     return ResponseEntity.ok(machine);
                 }
-                break;
-            case STOPPED:
+            }
+            case STOPPED -> {
                 if (this.authorisationService.isAuthorised(UserPermission.CAN_STOP_MACHINES, email)) {
                     this.machineService.updateStatus(machine);
                     return ResponseEntity.ok(machine);
                 }
-                break;
-            default:
+            }
+            default -> {
                 return ResponseEntity.status(403).build();
+            }
         }
         return ResponseEntity.status(403).build();
     }
@@ -112,7 +130,7 @@ public class MachineController {
     @PostMapping(value = "/delete", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> delete(@Valid @RequestBody Machine machine) {
         String email = getContext().getAuthentication().getName();
-        if (this.authorisationService.isAuthorised(UserPermission.CAN_DESTROY_MACHINES, email)) {
+        if (this.authorisationService.isAuthorised(UserPermission.CAN_DESTROY_MACHINES, email) && machine.getStatus() == MachineStatus.STOPPED) {
             this.machineService.delete(machine);
             return ResponseEntity.status(200).build();
         }

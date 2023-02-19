@@ -1,6 +1,7 @@
 package com.raf.RafCloudBack.models;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,10 @@ public class Machine {
 
     @OneToMany(mappedBy = "machine", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MachineRunningPeriod> runningPeriods = new ArrayList<>();
+
+    @Column
+    @NotNull
+    private Timestamp createdAt;
 
     public Long getId() {
         return id;
@@ -75,5 +80,13 @@ public class Machine {
 
     public void setRunningPeriods(List<MachineRunningPeriod> runningPeriods) {
         this.runningPeriods = runningPeriods;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 }
